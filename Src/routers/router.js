@@ -1,4 +1,4 @@
-const { Router } = require('express');
+const router = require('express').Router();
 const userRoute = require('./userRouter');
 const uploadVideo = require('./uploadVideoRouter');
 const streamThumbnailRouter = require('./streamThumbnailRouter');
@@ -6,8 +6,7 @@ const videoInfoRoute = require('./videoInfoRouter');
 const UserInfo = require('./userInfo');
 const streamVideoRouter = require('./streamVideoRouter');
 
-const router = Router();
-
+// Route to create/logging User account
 router.use('/account', userRoute);
 router.use('/user_info', UserInfo);
 router.use('/video', uploadVideo);

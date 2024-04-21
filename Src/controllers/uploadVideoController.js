@@ -9,19 +9,24 @@ const UserModel = require('../modules/userModel');
 
 const execPromise = promisify(exec);
 
+// Route handler function to handle video uploading
 const UploadVideo = asyncHandler(async (req, res) => {
+   // Check if req object has the following (files, name, description)
    if (!req.files || !req.body.name || !req.body.description) {
       res.status(400);
       throw new Error('Name, description, video, and thumbnail are required');
    }
 
+   // Destructure video and the thumbnail from req.files
    const { video, thumbnail } = req.files;
 
+   // Check if video and thumbnail are present
    if (!video || !thumbnail) {
       res.status(400);
       throw new Error('Video and thumbnail files are required');
    }
 
+   // Check if video and thumbnail are valid video and an image by checking their mimetype
    if (!video.mimetype.startsWith('video') || !thumbnail.mimetype.startsWith('image')) {
       await fs.unlink(video.tempFilePath);
       await fs.unlink(thumbnail.tempFilePath);
