@@ -1,9 +1,10 @@
 const express = require('express');
-const cors = require('cors');
 const mongoose = require('mongoose');
+const cors = require('cors');
 const cookieParser = require('cookie-parser');
+const routes = require('./Src/routers/router');
 const errorHandler = require('./Src/middlewares/errorHandler');
-require('dotenv').config();
+require('dotenv/config');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,20 +19,26 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/api/v1', require('./Src/routers/router'));
+app.use('/api/v1', routes);
+
+// Handle unknown Routes
+app.all('*', (_req, res) => {
+   res.status(404).json('404 not fund 😢');
+});
 
 // Error Handler
 app.use(errorHandler);
 
-// Handle unknown Routes
-app.all('*', (req, res) => {
-   res.status(404).json('404 not fund 😢');
-});
-
-// MongoDB connection and starting server
+// MongoDB connection
 mongoose
    .connect(process.env.MONGO_URI)
-   .then((result) => {
-      if (result) app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
+   .then(() => {
+      console.log('MongoDB connected successfully!');
+      // Start the server after MongoDB connection is established
+      app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
    })
-   .catch((error) => console.log(error));
+   .catch((error) => {
+      mongoose.connection.close();
+      console.log(error);
+      process.exit(1);
+   });

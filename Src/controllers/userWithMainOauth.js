@@ -1,7 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const UserModel = require('../modules/userModel');
+const { MainAuthUser } = require('../modules/userModel');
 
 /// Route handler function For handling the creating of User account
 const create_account = asyncHandler(async (req, res) => {
@@ -10,21 +10,21 @@ const create_account = asyncHandler(async (req, res) => {
       const { name, email, username, password } = req.validBody;
 
       // Check if name is already in use
-      const checkNameInDB = await UserModel.findOne({ name });
+      const checkNameInDB = await MainAuthUser.findOne({ name });
       if (checkNameInDB) {
          res.status(400);
          throw new Error('Name already in use');
       }
 
       // Check if email is already in use
-      const checkEmailInDB = await UserModel.findOne({ email });
+      const checkEmailInDB = await MainAuthUser.findOne({ email });
       if (checkEmailInDB) {
          res.status(400);
          throw new Error('Email already in use');
       }
 
       // Check if username is already in use
-      const checkUsernameInDB = await UserModel.findOne({ username });
+      const checkUsernameInDB = await MainAuthUser.findOne({ username });
       if (checkUsernameInDB) {
          res.status(400);
          throw new Error('Username already in use');
@@ -34,7 +34,7 @@ const create_account = asyncHandler(async (req, res) => {
       await bcrypt.hash(password, 11);
 
       // Create user account if the above validations are successful
-      await UserModel.create({ name, email, username, password: hashedPassword });
+      await MainAuthUser.create({ name, email, username, password: hashedPassword });
 
       // Send success response if user has being created
       res.sendStatus(201);
@@ -53,14 +53,14 @@ const user_login = asyncHandler(async (req, res) => {
       const { email, username, password } = req.validBody;
 
       // Check if email exists
-      const user = await UserModel.findOne({ email });
+      const user = await MainAuthUser.findOne({ email });
       if (!user) {
          res.status(401);
          throw new Error('Invalid Email');
       }
 
       // Check if username exists
-      const userByUsername = await UserModel.findOne({ username });
+      const userByUsername = await MainAuthUser.findOne({ username });
       if (!userByUsername) {
          res.status(401);
          throw new Error('Invalid Username');
