@@ -1,7 +1,7 @@
 const UserInfo = require('express').Router();
 const asyncHandler = require('express-async-handler');
-const verifyAccess = require('../middlewares/verifyAccess');
-const UserModel = require('../modules/userModel');
+const verifyAccess = require('../../middlewares/verifyAccess');
+const UserModel = require('../../modules/userModel');
 
 // Protect this route by verifying access to it from the verifyAccess middleware
 UserInfo.use(verifyAccess);

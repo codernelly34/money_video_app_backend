@@ -1,7 +1,7 @@
 const uploadVideo = require('express').Router();
 const fileUpload = require('express-fileupload');
-const UploadVideo = require('../controllers/uploadVideoController');
-const verifyAccess = require('../middlewares/verifyAccess');
+const UploadVideo = require('../../controllers/uploadVideoController');
+const verifyAccess = require('../../middlewares/verifyAccess');
 
 uploadVideo.use(fileUpload({ useTempFiles: true }));
 

@@ -1,17 +1,22 @@
 const router = require('express').Router();
-const userRoute = require('./userRouter');
-const uploadVideo = require('./uploadVideoRouter');
-const streamThumbnailRouter = require('./streamThumbnailRouter');
-const videoInfoRoute = require('./videoInfoRouter');
+const UserRoute = require('./userRoutes/UserRouter');
+const uploadVideo = require('./MoviesRoutes/uploadVideoRouter');
+const streamThumbnailRouter = require('./MoviesRoutes/streamThumbnailRouter');
+const videoInfoRoute = require('./MoviesRoutes/videoInfoRouter');
 const UserInfo = require('./userInfo');
-const streamVideoRouter = require('./streamVideoRouter');
+const streamVideoRouter = require('./MoviesRoutes/streamVideoRouter');
 
-// Route to create/logging User account
-router.use('/account', userRoute);
+// Route to create/login to User account
+router.use('/account', UserRoute);
+
 router.use('/user_info', UserInfo);
+
 router.use('/video', uploadVideo);
+
 router.use('/thumbnail', streamThumbnailRouter);
+
 router.use('/videoStream', streamVideoRouter);
+
 router.use('/video_info', videoInfoRoute);
 
 module.exports = router;
