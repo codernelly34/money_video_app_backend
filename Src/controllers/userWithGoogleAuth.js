@@ -1,5 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const GoogleOAuthClient = require('../modules/setGoogleOAuthClient');
+const { nanoid } = require('nanoid/non-secure');
+const { GoogleAuthUser } = require('../modules/userModel');
 
 // Route for initiating the OAuth flow
 const initOAuthFlow = asyncHandler(async (req, res) => {
@@ -12,7 +14,7 @@ const initOAuthFlow = asyncHandler(async (req, res) => {
       prompt: 'consent',
    });
 
-   res.json({ url: authorizeUrl });
+   res.status(200).json({ url: authorizeUrl });
 });
 
 const handleOAuthRedirect = asyncHandler(async (req, res) => {
@@ -24,16 +26,29 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
       await GoogleOAuthClient.setCredentials(r.tokens);
 
       const user = GoogleOAuthClient.credentials;
-      console.log(user, '\n');
 
-      const response = await fetch(
-         `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${GoogleOAuthClient.credentials.access_token}`
-      );
+      const UserID = nanoid(6);
+      const refreshToken = user.refresh_token;
+      const accessToken = user.access_token;
 
-      const data = await response.json();
-      console.log('data', data);
+      await GoogleAuthUser.create({ UserID, refreshToken });
+
+      res.cookie('accessTokenG', accessToken, {
+         httpOnly: true,
+         signed: true,
+         maxAge: 55 * 60 * 1000,
+         domain: 'localhost',
+      });
+
+      res.cookie('UserID', UserID, {
+         httpOnly: true,
+         secure: true,
+         signed: true,
+         maxAge: 56 * 60 * 1000,
+         domain: 'localhost',
+      });
    } catch (err) {
-      console.log('Error logging in with OAuth2 user', err);
+      console.error('Error logging in with OAuth2 user', err);
    }
 
    res.redirect(303, 'http://localhost:5173/');

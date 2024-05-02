@@ -3,13 +3,10 @@ const UserRoute = require('./userRoutes/UserRouter');
 const uploadVideo = require('./MoviesRoutes/uploadVideoRouter');
 const streamThumbnailRouter = require('./MoviesRoutes/streamThumbnailRouter');
 const videoInfoRoute = require('./MoviesRoutes/videoInfoRouter');
-const UserInfo = require('./userInfo');
 const streamVideoRouter = require('./MoviesRoutes/streamVideoRouter');
 
 // Route to create/login to User account
 router.use('/account', UserRoute);
-
-router.use('/user_info', UserInfo);
 
 router.use('/video', uploadVideo);
 

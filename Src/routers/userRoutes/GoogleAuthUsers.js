@@ -1,5 +1,5 @@
 const AuthGoogleRoute = require('express').Router();
-const { initOAuthFlow, handleOAuthRedirect } = '../../controllers/userWithGoogleAuth.js';
+const { initOAuthFlow, handleOAuthRedirect } = require('../../controllers/userWithGoogleAuth');
 
 AuthGoogleRoute.route('/init_google_Oauth_flow').post(initOAuthFlow);
 

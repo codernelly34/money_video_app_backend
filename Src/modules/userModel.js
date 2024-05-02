@@ -34,11 +34,11 @@ const MainAuthUserSchema = new mongoose.Schema(
 
 const GoogleAuthUserSchema = new mongoose.Schema(
    {
-      userID: {
+      UserID: {
          type: String,
          required: true,
       },
-      accessToken: {
+      refreshToken: {
          type: String,
          required: true,
       },

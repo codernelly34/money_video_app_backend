@@ -46,7 +46,7 @@ const create_account = asyncHandler(async (req, res) => {
    }
 });
 
-// Route handler function For handling User Logging logic
+// Route handler function For handling User Login logic
 const user_login = asyncHandler(async (req, res) => {
    try {
       // Destructuring of User info from req.validBody which is set in validateReqBody after validation is complete
