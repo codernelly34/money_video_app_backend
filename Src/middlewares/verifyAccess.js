@@ -3,16 +3,6 @@ require('dotenv/config');
 
 // Middleware function to verify if User have to protected route
 const verifyAccess = (req, res, next) => {
-   if (res.signedCookies.UserID) {
-      if (!res.signedCookies.accessTokenG) {
-         res.status(401);
-         throw new Error('Invalid access token G');
-      }
-      req.user = res.signedCookies.UserID;
-      next();
-      return;
-   }
-
    // Check if accessToken is present
    if (!req.signedCookies.accessToken) {
       res.status(401);

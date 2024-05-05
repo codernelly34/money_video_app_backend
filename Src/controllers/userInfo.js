@@ -1,26 +1,16 @@
 const asyncHandler = require('express-async-handler');
+const userModel = require('../modules/userModel');
 
-const userinfoWithMainAuth = asyncHandler(async (req, res) => {
-   // Get the user from req.user set in verifyAccess if verification is successful
-   const user = req.user.username;
+const getUserInfo = asyncHandler(async (req, res) => {
+   try {
+      const UserID = req.user;
 
-   // Get user info from DB, if the verifyAccess is there will be a user no need checking for possible Errors
-   const useInfo = await UserModel.findOne({ username: user });
+      const userInfo = await userModel.findOne({ UserID });
 
-   // Destructure User info from useInfo
-   const { name, email, username, profilePic } = useInfo;
+      const { name, username, profilePic } = userInfo;
 
-   // send a successful response with user info
-   res.status(200).json({ name, email, username, profilePic });
+      res.status(200).json({ name, username, profilePic });
+   } catch (error) {}
 });
 
-const userinfoWithGoogleAuth = asyncHandler(async (req, res) => {
-   const access_token = req.access_token;
-   const response = await fetch(`https://www.googleapis.com/oauth2/v3/userinfo?access_token=${access_token}`);
-
-   const data = await response.json();
-
-   res.status(200).json(data);
-});
-
-module.exports = { userinfoWithMainAuth, userinfoWithGoogleAuth };
+module.exports = getUserInfo;
