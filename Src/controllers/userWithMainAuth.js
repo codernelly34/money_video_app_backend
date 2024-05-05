@@ -1,7 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
-const { MainAuthUser } = require('../modules/userModel');
+const userModel = require('../modules/userModel');
+const { nanoid } = require('nanoid/non-secure');
 
 /// Route handler function For handling the creating of User account
 const create_account = asyncHandler(async (req, res) => {
@@ -10,21 +11,21 @@ const create_account = asyncHandler(async (req, res) => {
       const { name, email, username, password } = req.validBody;
 
       // Check if name is already in use
-      const checkNameInDB = await MainAuthUser.findOne({ name });
+      const checkNameInDB = await userModel.findOne({ name });
       if (checkNameInDB) {
          res.status(400);
          throw new Error('Name already in use');
       }
 
       // Check if email is already in use
-      const checkEmailInDB = await MainAuthUser.findOne({ email });
+      const checkEmailInDB = await userModel.findOne({ email });
       if (checkEmailInDB) {
          res.status(400);
          throw new Error('Email already in use');
       }
 
       // Check if username is already in use
-      const checkUsernameInDB = await MainAuthUser.findOne({ username });
+      const checkUsernameInDB = await userModel.findOne({ username });
       if (checkUsernameInDB) {
          res.status(400);
          throw new Error('Username already in use');
@@ -33,16 +34,16 @@ const create_account = asyncHandler(async (req, res) => {
       // Hash password
       await bcrypt.hash(password, 11);
 
+      const UserID = nanoid(6);
+
       // Create user account if the above validations are successful
-      await MainAuthUser.create({ name, email, username, password: hashedPassword });
+      await userModel.create({ name, email, username, UserID, password: hashedPassword });
 
       // Send success response if user has being created
       res.sendStatus(201);
    } catch (error) {
-      if (error) {
-         res.status(500);
-         throw new Error('Unable to create user pleas try again later');
-      }
+      res.status(500);
+      throw new Error('Unable to create user pleas try again later');
    }
 });
 
@@ -53,14 +54,14 @@ const user_login = asyncHandler(async (req, res) => {
       const { email, username, password } = req.validBody;
 
       // Check if email exists
-      const user = await MainAuthUser.findOne({ email });
+      const user = await userModel.findOne({ email });
       if (!user) {
          res.status(401);
          throw new Error('Invalid Email');
       }
 
       // Check if username exists
-      const userByUsername = await MainAuthUser.findOne({ username });
+      const userByUsername = await userModel.findOne({ username });
       if (!userByUsername) {
          res.status(401);
          throw new Error('Invalid Username');
@@ -74,11 +75,11 @@ const user_login = asyncHandler(async (req, res) => {
       }
 
       // Generate tokens
-      const refreshToken = jwt.sign({ username }, process.env.REFRESH_TOKEN_SECRET, {
+      const refreshToken = jwt.sign(userByUsername.UserID, process.env.REFRESH_TOKEN_SECRET, {
          expiresIn: '5h',
       });
 
-      const accessToken = jwt.sign({ username }, process.env.ACCESS_TOKEN_SECRET, {
+      const accessToken = jwt.sign(userByUsername.UserID, process.env.ACCESS_TOKEN_SECRET, {
          expiresIn: '2h',
       });
 
@@ -97,8 +98,8 @@ const user_login = asyncHandler(async (req, res) => {
       });
 
       // Update user tokens
-      userByUsername.token.push(refreshToken);
-      await userByUsername.save();
+      userByUsername.tokens.push(refreshToken);
+      const savedUser = await userByUsername.save();
 
       // Structure User info to be send
       const userInfo = {
@@ -110,10 +111,8 @@ const user_login = asyncHandler(async (req, res) => {
       // Send success with User info
       res.status(200).json(userInfo);
    } catch (error) {
-      if (error) {
-         res.status(500);
-         throw new Error('Internal server error pleas try again later');
-      }
+      res.status(500);
+      throw new Error('Internal server error pleas try again later');
    }
 });
 

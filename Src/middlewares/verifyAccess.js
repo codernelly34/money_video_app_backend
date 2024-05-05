@@ -3,24 +3,24 @@ require('dotenv/config');
 
 // Middleware function to verify if User have to protected route
 const verifyAccess = (req, res, next) => {
-   if (res.cookies.UserID) {
-      if (!res.cookies.accessTokenG) {
+   if (res.signedCookies.UserID) {
+      if (!res.signedCookies.accessTokenG) {
          res.status(401);
          throw new Error('Invalid access token G');
       }
-      req.user = res.cookies.UserID;
+      req.user = res.signedCookies.UserID;
       next();
       return;
    }
 
    // Check if accessToken is present
-   if (!req.cookies.accessToken) {
+   if (!req.signedCookies.accessToken) {
       res.status(401);
       throw new Error('Access token is missing');
    }
 
    // Verify accessToken
-   const accessToken = req.cookies.accessToken;
+   const accessToken = req.signedCookies.accessToken;
    jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET, (err, decoded) => {
       if (err) {
          res.status(401);

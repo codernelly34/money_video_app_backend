@@ -5,7 +5,7 @@ const { promisify } = require('util');
 const { exec } = require('child_process');
 const path = require('path');
 const PostModel = require('../modules/postModel');
-const UserModel = require('../modules/userModel');
+const { GoogleAuthUser, MainAuthUser } = require('../modules/userModel');
 
 const execPromise = promisify(exec);
 
@@ -26,28 +26,28 @@ const UploadVideo = asyncHandler(async (req, res) => {
       throw new Error('Video and thumbnail files are required');
    }
 
-   // Check if video and thumbnail are valid video and an image by checking their mimetype
-   if (!video.mimetype.startsWith('video') || !thumbnail.mimetype.startsWith('image')) {
-      await fs.unlink(video.tempFilePath);
-      await fs.unlink(thumbnail.tempFilePath);
-      res.status(400);
-      throw new Error('Invalid file types, please upload a video and an image');
-   }
-
-   const videoName = `${uuidv4()}.mp4`;
-   const thumbnailName = `${uuidv4()}.${thumbnail.name.split('.').pop()}`;
-
-   const videoPath = path.join(__dirname, '../', 'medias', 'videos', videoName);
-   const thumbnailPath = path.join(__dirname, '../', 'medias', 'thumbnails', thumbnailName);
-
-   const command = `ffmpeg -i ${video.tempFilePath} -c:v libx264 -c:a aac -strict experimental ${videoPath}`;
-
    try {
+      // Check if video and thumbnail are valid video and an image by checking their mimetype
+      if (!video.mimetype.startsWith('video') || !thumbnail.mimetype.startsWith('image')) {
+         await fs.unlink(video.tempFilePath);
+         await fs.unlink(thumbnail.tempFilePath);
+         res.status(400);
+         throw new Error('Invalid file types, please upload a video and an image');
+      }
+
+      const videoName = `${uuidv4()}.mp4`;
+      const thumbnailName = `${uuidv4()}.${thumbnail.name.split('.').pop()}`;
+
+      const videoPath = path.join(__dirname, '../', 'medias', 'videos', videoName);
+      const thumbnailPath = path.join(__dirname, '../', 'medias', 'thumbnails', thumbnailName);
+
+      const command = `ffmpeg -i ${video.tempFilePath} -c:v libx264 -c:a aac -strict experimental ${videoPath}`;
+
       await thumbnail.mv(thumbnailPath);
       await execPromise(command);
       await fs.unlink(video.tempFilePath);
 
-      const author = await UserModel.findOne({ username: req.user.username });
+      const author = await MainAuthUser.findOne({ username: req.user.username });
 
       const post = new PostModel({
          name: req.body.name,
@@ -62,11 +62,11 @@ const UploadVideo = asyncHandler(async (req, res) => {
       res.status(201).json({ message: 'Video uploaded successfully', post });
    } catch (error) {
       res.status(500);
-      console.error(error);
       await fs.unlink(video.tempFilePath);
       await fs.unlink(thumbnail.tempFilePath);
       await fs.unlink(videoPath);
       await fs.unlink(thumbnailPath);
+      console.error(error);
       throw new Error('Internal Server Error');
    }
 });
