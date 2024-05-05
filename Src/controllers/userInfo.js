@@ -10,7 +10,10 @@ const getUserInfo = asyncHandler(async (req, res) => {
       const { name, username, profilePic } = userInfo;
 
       res.status(200).json({ name, username, profilePic });
-   } catch (error) {}
+   } catch (error) {
+      res.status(500);
+      throw new Error('Server error please try again later');
+   }
 });
 
 module.exports = getUserInfo;
