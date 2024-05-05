@@ -2,10 +2,10 @@
 const statusMassage = {
    400: 'Bad Request',
    401: 'Unauthorized',
-   403: ' Forbidden',
+   403: 'Forbidden',
    404: 'Not Found',
    405: 'Method Not Allowed',
-   500: ' Internal Server Error',
+   500: 'Internal Server Error',
 };
 
 // create and export errorHandler middleware function at once

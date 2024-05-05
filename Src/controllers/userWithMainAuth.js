@@ -1,8 +1,9 @@
 const asyncHandler = require('express-async-handler');
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
 const userModel = require('../modules/userModel');
 const { nanoid } = require('nanoid/non-secure');
+const generateToken = require('../modules/generateToken');
+const setCookie = require('../modules/setCookie');
 
 /// Route handler function For handling the creating of User account
 const create_account = asyncHandler(async (req, res) => {
@@ -75,27 +76,10 @@ const user_login = asyncHandler(async (req, res) => {
       }
 
       // Generate tokens
-      const refreshToken = jwt.sign(userByUsername.UserID, process.env.REFRESH_TOKEN_SECRET, {
-         expiresIn: '5h',
-      });
-
-      const accessToken = jwt.sign(userByUsername.UserID, process.env.ACCESS_TOKEN_SECRET, {
-         expiresIn: '2h',
-      });
+      const { refreshToken, accessToken } = generateToken(userByUsername.UserID);
 
       // Set cookies
-      res.cookie('refreshToken', refreshToken, {
-         httpOnly: true,
-         maxAge: 5 * 60 * 60 * 1000,
-         sameSite: 'lax',
-         secure: true,
-      });
-      res.cookie('accessToken', accessToken, {
-         httpOnly: true,
-         maxAge: 2 * 60 * 60 * 1000,
-         sameSite: 'lax',
-         secure: true,
-      });
+      setCookie(res, refreshToken, accessToken);
 
       // Update user tokens
       userByUsername.tokens.push(refreshToken);
