@@ -13,7 +13,7 @@ const PORT = process.env.PORT || 3000;
 app.disable('x-powered-by');
 
 // Middlewares
-app.use(cors({ origin: ['http://127.0.0.1:3000', 'http://localhost:3000'], credentials: true }));
+app.use(cors({ origin: ['http://127.0.0.1:3000', 'http://localhost:3000'], credentials: true })); // origin: ['http://127.0.0.1:3000', 'http://localhost:3000']
 app.use(cookieParser(process.env.COOKIE_SECRET));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -39,6 +39,6 @@ mongoose
    })
    .catch((error) => {
       mongoose.connection.close();
-      console.log(error);
+      console.error(error);
       process.exit(1);
    });

@@ -1,8 +1,11 @@
-const AuthGoogleRoute = require('express').Router();
-const { initOAuthFlow, handleOAuthRedirect } = require('../../controllers/userWithGoogleAuth');
+const express = require('express');
+const GoogleAuthRoute = express.Router();
+const { startOAuthFlow, handleOAuthRedirect } = require('../../controllers/userWithGoogleAuth');
 
-AuthGoogleRoute.route('/init_google_Oauth_flow').post(initOAuthFlow);
+// Route to initiate the OAuth flow
+GoogleAuthRoute.post('/start_oauth_flow', startOAuthFlow);
 
-AuthGoogleRoute.route('/handle_Oauth_redirect').get(handleOAuthRedirect);
+// Route to handle OAuth redirect after user grants consent
+GoogleAuthRoute.get('/oauth_redirect', handleOAuthRedirect);
 
-module.exports = AuthGoogleRoute;
+module.exports = GoogleAuthRoute;

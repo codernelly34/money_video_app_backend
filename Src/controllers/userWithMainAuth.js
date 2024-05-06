@@ -5,67 +5,60 @@ const { nanoid } = require('nanoid/non-secure');
 const generateToken = require('../modules/generateToken');
 const setCookie = require('../modules/setCookie');
 
-/// Route handler function For handling the creating of User account
-const create_account = asyncHandler(async (req, res) => {
+// Route handler function for creating a user account
+const createUserAccount = asyncHandler(async (req, res) => {
    try {
-      // Destructuring of User info from req.validBody which is set in validateReqBody after validation is complete
+      // Extract user info from req.validBody which is set in validateReqBody after validation is complete
       const { name, email, username, password } = req.validBody;
 
       // Check if name is already in use
-      const checkNameInDB = await userModel.findOne({ name });
-      if (checkNameInDB) {
+      const nameExists = await userModel.findOne({ name });
+      if (nameExists) {
          res.status(400);
          throw new Error('Name already in use');
       }
 
       // Check if email is already in use
-      const checkEmailInDB = await userModel.findOne({ email });
-      if (checkEmailInDB) {
+      const emailExists = await userModel.findOne({ email });
+      if (emailExists) {
          res.status(400);
          throw new Error('Email already in use');
       }
 
       // Check if username is already in use
-      const checkUsernameInDB = await userModel.findOne({ username });
-      if (checkUsernameInDB) {
+      const usernameExists = await userModel.findOne({ username });
+      if (usernameExists) {
          res.status(400);
          throw new Error('Username already in use');
       }
 
-      // Hash password
-      await bcrypt.hash(password, 11);
+      // Hash the password
+      const hashedPassword = await bcrypt.hash(password, 11);
 
-      const UserID = nanoid(6);
+      const userID = nanoid(6);
 
       // Create user account if the above validations are successful
-      await userModel.create({ name, email, username, UserID, password: hashedPassword });
+      await userModel.create({ name, email, username, userID, password: hashedPassword });
 
-      // Send success response if user has being created
+      // Send success response if user has been created
       res.sendStatus(201);
    } catch (error) {
       res.status(500);
-      throw new Error('Unable to create user pleas try again later');
+      throw new Error('Unable to create user, please try again later');
    }
 });
 
-// Route handler function For handling User Login logic
-const user_login = asyncHandler(async (req, res) => {
+// Route handler function for user login
+const userLogin = asyncHandler(async (req, res) => {
    try {
-      // Destructuring of User info from req.validBody which is set in validateReqBody after validation is complete
-      const { email, username, password } = req.validBody;
+      // Extract user info from req.validBody which is set in validateReqBody after validation is complete
+      const { email, password } = req.validBody;
 
-      // Check if email exists
+      // Check if user with the given email exists
       const user = await userModel.findOne({ email });
       if (!user) {
          res.status(401);
          throw new Error('Invalid Email');
-      }
-
-      // Check if username exists
-      const userByUsername = await userModel.findOne({ username });
-      if (!userByUsername) {
-         res.status(401);
-         throw new Error('Invalid Username');
       }
 
       // Compare password
@@ -76,28 +69,28 @@ const user_login = asyncHandler(async (req, res) => {
       }
 
       // Generate tokens
-      const { refreshToken, accessToken } = generateToken(userByUsername.UserID);
+      const { refreshToken, accessToken } = generateToken(user.userID);
 
       // Set cookies
       setCookie(res, refreshToken, accessToken);
 
       // Update user tokens
-      userByUsername.tokens.push(refreshToken);
-      const savedUser = await userByUsername.save();
+      user.tokens.push(refreshToken);
+      await user.save();
 
-      // Structure User info to be send
+      // Structure user info to be sent
       const userInfo = {
-         name: savedUser.name,
-         username: savedUser.username,
-         profilePic: savedUser.profilePic,
+         name: user.name,
+         username: user.username,
+         profilePic: user.profilePic,
       };
 
-      // Send success with User info
+      // Send success response with user info
       res.status(200).json(userInfo);
    } catch (error) {
       res.status(500);
-      throw new Error('Internal server error pleas try again later');
+      throw new Error('Internal server error, please try again later');
    }
 });
 
-module.exports = { create_account, user_login };
+module.exports = { createUserAccount, userLogin };

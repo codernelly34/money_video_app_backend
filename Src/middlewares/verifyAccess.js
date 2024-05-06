@@ -18,7 +18,7 @@ const verifyAccess = (req, res, next) => {
       }
 
       // Set req.user to equal decoded which is the payload from the token if verification is successful
-      req.user = decoded;
+      req.user = decoded.UserID;
       next(); // Call the next middleware function after token verification is successful
    });
 };

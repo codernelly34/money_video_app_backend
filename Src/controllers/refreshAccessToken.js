@@ -1,5 +1,4 @@
 const asyncHandler = require('express-async-handler');
-const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const userModel = require('../modules/userModel');
 const generateToken = require('../modules/generateToken');
@@ -30,9 +29,9 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new Error('Invalid access token');
          }
 
-         const getUserFromDB = await userModel.findOne({ UserID: decoded });
+         const getUserFromDB = await userModel.findOne({ UserID: decoded.UserID });
 
-         const accessToken = jwt.sign(getUserFromDB.UserID, process.env.ACCESS_TOKEN_SECRET, {
+         const accessToken = jwt.sign({ UserID: getUserFromDB.UserID }, process.env.ACCESS_TOKEN_SECRET, {
             expiresIn: '2h',
          });
          res.cookie('accessToken', accessToken, {
@@ -40,6 +39,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             maxAge: 2 * 60 * 60 * 1000,
             sameSite: 'lax',
             secure: true,
+            signed: true,
             domain: 'localhost',
          });
 

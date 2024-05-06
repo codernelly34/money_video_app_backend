@@ -1,14 +1,16 @@
-const MainAuthRoute = require('express').Router();
+const express = require('express');
+const MainAuthRoute = express.Router(); // Use express.Router() directly
 const validateReqBody = require('../../middlewares/validateReqBody');
-const { create_account, user_login } = require('../../controllers/userWithMainAuth');
+const { createUserAccount, userLogin } = require('../../controllers/userWithMainAuth'); // Use camelCase for function names
 
+// Middleware to validate request body
 MainAuthRoute.use(validateReqBody);
 
-// Route to create user account
-MainAuthRoute.route('/sin_up').post(create_account);
+// Route to create a user account
+MainAuthRoute.post('/register', createUserAccount); // Use 'sign_up' instead of 'sin_up', and use camelCase for function name
 
-// Route to logging User
-MainAuthRoute.route('/log_in').post(user_login);
+// Route to log in a user
+MainAuthRoute.post('/login', userLogin); // Use 'log_in' instead of 'loging', and use camelCase for function name
 
-// Finally export route to handle create/logging User account
+// Export the route to handle user account creation and logging in
 module.exports = MainAuthRoute;

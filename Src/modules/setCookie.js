@@ -4,6 +4,7 @@ const setCookie = (res, refreshToken, accessToken) => {
       maxAge: 5 * 60 * 60 * 1000,
       sameSite: 'lax',
       secure: true,
+      signed: true,
       domain: 'localhost',
    });
 
@@ -12,6 +13,7 @@ const setCookie = (res, refreshToken, accessToken) => {
       maxAge: 2 * 60 * 60 * 1000,
       sameSite: 'lax',
       secure: true,
+      signed: true,
       domain: 'localhost',
    });
 

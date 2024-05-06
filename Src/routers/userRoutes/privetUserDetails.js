@@ -4,6 +4,6 @@ const verifyAccess = require('../../middlewares/verifyAccess');
 
 UserDetails.use(verifyAccess);
 
-UserDetails.route('/use_info', getUserInfo);
+UserDetails.route('/use_info').get(getUserInfo);
 
 module.exports = UserDetails;
