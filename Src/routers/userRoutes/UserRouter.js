@@ -1,8 +1,8 @@
 const express = require('express');
 const UserRouter = express.Router();
 const MainAuthRoute = require('./MainAuthUsers');
-const GoogleAuthRoute = require('./GoogleAuthUsers'); // Renamed for clarity
-const UserDetailsRoute = require('./privetUserDetails'); // Renamed for clarity
+const GoogleAuthRoute = require('./GoogleAuthUsers');
+const UserDetailsRoute = require('./privetUserDetails');
 
 // Routes for Google OAuth authentication
 UserRouter.use('/google', GoogleAuthRoute);

@@ -4,8 +4,13 @@ const userModel = require('../modules/userModel');
 const { nanoid } = require('nanoid/non-secure');
 const generateToken = require('../modules/generateToken');
 const setCookie = require('../modules/setCookie');
+const fsPromise = require('fs/promises');
+const path = require('path');
 
 // Route handler function for creating a user account
+//                     Endpoints
+// Development at POST http://localhost:4040/api/v1/account/main/register
+// Production  at
 const createUserAccount = asyncHandler(async (req, res) => {
    try {
       // Extract user info from req.validBody which is set in validateReqBody after validation is complete
@@ -35,20 +40,49 @@ const createUserAccount = asyncHandler(async (req, res) => {
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 11);
 
+      // Generate a unique userID
       const userID = nanoid(6);
 
+      // Create a simple SVG image with the first letter of the user's name
+      const createProfilePic = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
+          <rect width="100" height="100" fill="#AAAAAA"/>
+          <text x="50%" y="50%" text-anchor="middle" alignment-baseline="central" font-family="Arial" font-size="40" fill="#FFFFFF">${name
+             .charAt(0)
+             .toUpperCase()}</text>
+        </svg>
+      `;
+
+      // Generate a unique profile picture name
+      const profilePicName = `${nanoid(15)}.svg`;
+
+      // Define the file path to save the image
+      const profilePicFilePath = path.join(__dirname, '../', 'medias', 'profilePhoto', profilePicName);
+
+      // Write the SVG content to a file
+      await fsPromise.writeFile(profilePicFilePath, createProfilePic);
+
+      // Construct the profile picture URL
+      const profilePicUrl = `http://localhost:4040/api/v1/profilePic/${profilePicName}`;
+
       // Create user account if the above validations are successful
-      await userModel.create({ name, email, username, userID, password: hashedPassword });
+      await userModel.create({ name, email, username, userID, profilePic: profilePicUrl, password: hashedPassword });
 
       // Send success response if user has been created
       res.sendStatus(201);
    } catch (error) {
+      // Handle errors
+      console.error('Error creating user:', error);
       res.status(500);
       throw new Error('Unable to create user, please try again later');
    }
 });
 
 // Route handler function for user login
+// Route handler function for creating a user account
+//                     Endpoints
+// Development at POST http://localhost:4040/api/v1/account/main/login
+// Production  at
 const userLogin = asyncHandler(async (req, res) => {
    try {
       // Extract user info from req.validBody which is set in validateReqBody after validation is complete
@@ -88,6 +122,7 @@ const userLogin = asyncHandler(async (req, res) => {
       // Send success response with user info
       res.status(200).json(userInfo);
    } catch (error) {
+      console.log('Error logging in User', error);
       res.status(500);
       throw new Error('Internal server error, please try again later');
    }

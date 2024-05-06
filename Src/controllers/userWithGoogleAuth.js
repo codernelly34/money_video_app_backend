@@ -6,6 +6,9 @@ const generateToken = require('../modules/generateToken');
 const setCookie = require('../modules/setCookie');
 
 // Route for initiating the OAuth flow
+//                     Endpoints
+// Development at POST http://localhost:4040/api/v1/account/google/start_oauth_flow
+// Production  at
 const startOAuthFlow = asyncHandler(async (req, res) => {
    // Set Referrer-Policy header
    res.header('Referrer-Policy', 'no-referrer-when-downgrade');
@@ -22,6 +25,9 @@ const startOAuthFlow = asyncHandler(async (req, res) => {
 });
 
 // Route for handling OAuth redirect after user grants consent
+//                     Endpoints
+// Development at GET http://localhost:4040/api/v1/account/google/oauth_redirect
+// Production  at
 const handleOAuthRedirect = asyncHandler(async (req, res) => {
    const code = req.query.code;
 
@@ -88,9 +94,9 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
       // Redirect to home page
       res.redirect(303, 'http://localhost:5173/');
    } catch (error) {
-      console.error('Error logging in with OAuth2 user', error);
       // Handle error
-      res.status(500).send('Error logging in with OAuth2 user');
+      res.status(500);
+      throw new Error('Error logging in with OAuth2 user');
    }
 });
 

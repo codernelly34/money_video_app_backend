@@ -1,6 +1,10 @@
 const asyncHandler = require('express-async-handler');
 const userModel = require('../modules/userModel');
 
+// Route handler function for sending user info this is a privet route
+//                     Endpoints
+// Development at GET http://localhost:4040/api/v1/account/details/use_info
+// Production  at
 const getUserInfo = asyncHandler(async (req, res) => {
    try {
       const UserID = req.user;
