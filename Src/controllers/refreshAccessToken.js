@@ -1,6 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const userModel = require('../modules/userModel');
+const generateToken = require('../modules/generateToken');
+const setCookie = require('../modules/setCookie');
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
    // Check if refreshToken is present in signed cookies
@@ -28,26 +30,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
             throw new Error('Invalid refresh token');
          }
 
+         res.clearCookie();
+
          // Generate a new access token
-         const accessToken = jwt.sign({ UserID: user.UserID }, process.env.ACCESS_TOKEN_SECRET, {
-            expiresIn: '2h',
-         });
+         const { refreshToken, accessToken } = generateToken(user.UserID);
 
          // Set the new access token as a signed cookie
-         res.cookie('accessToken', accessToken, {
-            httpOnly: true,
-            maxAge: 2 * 60 * 60 * 1000, // 2 hours
-            sameSite: 'lax',
-            secure: true,
-            signed: true,
-            domain: 'localhost',
-         });
+         setCookie(res, refreshToken, accessToken);
 
          // Send success response
          res.sendStatus(200);
       });
    } catch (error) {
-      console.error('Error refreshing access token:', error);
       res.status(500);
       throw new Error('Internal Server Error');
    }
