@@ -4,6 +4,10 @@ const userModel = require('../modules/userModel');
 const generateToken = require('../modules/generateToken');
 const setCookie = require('../modules/setCookie');
 
+// Route handler function for refreshing user access
+//                     Endpoints
+// Development at PATCH http://localhost:4040/api/v1/refresh_access
+// Production  at
 const refreshAccessToken = asyncHandler(async (req, res) => {
    // Check if refreshToken is present in signed cookies
    if (!req.signedCookies.refreshToken) {
