@@ -78,7 +78,7 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
          profilePic: picture,
       };
 
-      // Save user to the database
+      // Save new user to the database
       const savedUser = await userModel.create(newUser);
 
       // Generate tokens
