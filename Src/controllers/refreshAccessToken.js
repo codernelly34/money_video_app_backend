@@ -4,10 +4,10 @@ const userModel = require('../modules/userModel');
 const generateToken = require('../modules/generateToken');
 const setCookie = require('../modules/setCookie');
 
-// Route handler function for refreshing user access
-//                     Endpoints
-// Development at PATCH http://localhost:4040/api/v1/refresh_access
-// Production  at
+// Route handler function for refreshing user access token
+// HTTP method (GET)
+// Development uri (http://localhost:4040/api/v1/account/refresh_access)
+// Production uri ()
 const refreshAccessToken = asyncHandler(async (req, res) => {
    // Check if refreshToken is present in signed cookies
    if (!req.signedCookies.refreshToken) {
@@ -16,14 +16,18 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
    }
 
    try {
+      // Set the refresh token
       const refreshToken = req.signedCookies.refreshToken;
+
+      const errorMsg =
+         'Invalid refresh token this is an attempt to hack this account you will be logout completely re-login to protect your account';
 
       // Check if refresh token is associated with a user in the database
       const user = await userModel.findOne({ tokens: refreshToken });
       if (!user) {
-         res.clearCookie('refreshToken');
+         res.clearCookie();
          res.status(403);
-         throw new Error('Invalid refresh token');
+         throw new Error(errorMsg);
       }
 
       // Verify the refresh token
@@ -31,15 +35,15 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
          if (err) {
             res.clearCookie('refreshToken');
             res.status(403);
-            throw new Error('Invalid refresh token');
+            throw new Error(errorMsg);
          }
 
          res.clearCookie();
 
-         // Generate a new access token
+         // Generate a new tokens
          const { refreshToken, accessToken } = generateToken(user.UserID);
 
-         // Set the new access token as a signed cookie
+         // Set cookie with new tokens
          setCookie(res, refreshToken, accessToken);
 
          // Send success response

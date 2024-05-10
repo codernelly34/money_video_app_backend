@@ -8,9 +8,9 @@ const fsPromise = require('fs/promises');
 const path = require('path');
 
 // Route handler function for creating a user account
-//                     Endpoints
-// Development at POST http://localhost:4040/api/v1/account/main/register
-// Production  at
+// HTTP method (POST)
+// Development uri (http://localhost:4040/api/v1/account/main/register)
+// Production uri ()
 const createUserAccount = asyncHandler(async (req, res) => {
    try {
       // Extract user info from req.validBody which is set in validateReqBody after validation is complete
@@ -43,7 +43,7 @@ const createUserAccount = asyncHandler(async (req, res) => {
       // Generate a unique userID
       const userID = nanoid(6);
 
-      // Create a simple SVG image with the first letter of the user's name
+      // Create User profile photo with SVG using the first letter of the user's name
       const createProfilePic = `
         <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
           <rect width="100" height="100" fill="#AAAAAA"/>
@@ -59,7 +59,7 @@ const createUserAccount = asyncHandler(async (req, res) => {
       // Define the file path to save the image
       const profilePicFilePath = path.join(__dirname, '../', 'medias', 'profilePhoto', profilePicName);
 
-      // Write the SVG content to a file
+      // Save the User profile photo to define path 👆🏿
       await fsPromise.writeFile(profilePicFilePath, createProfilePic);
 
       // Construct the profile picture URL
@@ -71,18 +71,15 @@ const createUserAccount = asyncHandler(async (req, res) => {
       // Send success response if user has been created
       res.sendStatus(201);
    } catch (error) {
-      // Handle errors
-      console.error('Error creating user:', error);
       res.status(500);
-      throw new Error('Unable to create user, please try again later');
+      throw new Error('Server error unable to perform this action please try again later');
    }
 });
 
 // Route handler function for user login
-// Route handler function for creating a user account
-//                     Endpoints
-// Development at POST http://localhost:4040/api/v1/account/main/login
-// Production  at
+// HTTP method (POST)
+// Development uri (http://localhost:4040/api/v1/account/main/login)
+// Production uri ()
 const userLogin = asyncHandler(async (req, res) => {
    try {
       // Extract user info from req.validBody which is set in validateReqBody after validation is complete
@@ -122,9 +119,8 @@ const userLogin = asyncHandler(async (req, res) => {
       // Send success response with user info
       res.status(200).json(userInfo);
    } catch (error) {
-      console.log('Error logging in User', error);
       res.status(500);
-      throw new Error('Internal server error, please try again later');
+      throw new Error('Server error unable to perform this action please try again later');
    }
 });
 

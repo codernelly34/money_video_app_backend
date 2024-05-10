@@ -13,4 +13,7 @@ UserRouter.use('/main', MainAuthRoute);
 // Routes for accessing user details
 UserRouter.use('/details', UserDetailsRoute);
 
+// Route for refreshing user access
+UserRouter.route('/refresh_access').get(refreshAccessToken);
+
 module.exports = UserRouter;

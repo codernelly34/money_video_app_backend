@@ -5,10 +5,10 @@ const userModel = require('../modules/userModel');
 const generateToken = require('../modules/generateToken');
 const setCookie = require('../modules/setCookie');
 
-// Route for initiating the OAuth flow
-//                     Endpoints
-// Development at POST http://localhost:4040/api/v1/account/google/start_oauth_flow
-// Production  at
+// Route handler function for initiating the OAuth flow
+// HTTP method (POST)
+// Development uri (http://localhost:4040/api/v1/account/google/start_oauth_flow)
+// Production uri ()
 const startOAuthFlow = asyncHandler(async (req, res) => {
    // Set Referrer-Policy header
    res.header('Referrer-Policy', 'no-referrer-when-downgrade');
@@ -24,10 +24,10 @@ const startOAuthFlow = asyncHandler(async (req, res) => {
    res.status(200).json({ authUrl });
 });
 
-// Route for handling OAuth redirect after user grants consent
-//                     Endpoints
-// Development at GET http://localhost:4040/api/v1/account/google/oauth_redirect
-// Production  at
+// Route handler function for handling OAuth redirect after user grants consent
+// HTTP method (GET)
+// Development uri (http://localhost:4040/api/v1/account/google/oauth_redirect)
+// Production uri ()
 const handleOAuthRedirect = asyncHandler(async (req, res) => {
    const code = req.query.code;
 
