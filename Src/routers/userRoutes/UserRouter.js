@@ -3,6 +3,7 @@ const UserRouter = express.Router();
 const MainAuthRoute = require('./MainAuthUsers');
 const GoogleAuthRoute = require('./GoogleAuthUsers');
 const UserDetailsRoute = require('./privetUserDetails');
+const refreshAccessToken = require('../../controllers/refreshAccessToken');
 
 // Routes for Google OAuth authentication
 UserRouter.use('/google', GoogleAuthRoute);

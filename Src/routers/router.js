@@ -3,7 +3,6 @@ const UserRoute = require('./userRoutes/UserRouter');
 const uploadVideo = require('./MoviesRoutes/uploadVideoRouter');
 const videoInfoRoute = require('./MoviesRoutes/videoInfoRouter');
 const streamVideoRouter = require('./MoviesRoutes/streamVideoRouter');
-const refreshAccessToken = require('../controllers/refreshAccessToken');
 const streamThumbnailRouter = require('./MoviesRoutes/streamThumbnailRouter');
 
 // Route for handling all logic about User account
