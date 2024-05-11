@@ -46,7 +46,7 @@ const createUserAccount = asyncHandler(async (req, res) => {
       // Create User profile photo with SVG using the first letter of the user's name
       const createProfilePic = `
         <svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100">
-          <rect width="100" height="100" fill="#AAAAAA"/>
+          <rect width="200" height="200" fill="#AAAAAA"/>
           <text x="50%" y="50%" text-anchor="middle" alignment-baseline="central" font-family="Arial" font-size="40" fill="#FFFFFF">${name
              .charAt(0)
              .toUpperCase()}</text>

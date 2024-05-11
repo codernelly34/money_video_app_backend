@@ -2,7 +2,7 @@ const asyncHandler = require('express-async-handler');
 const sharp = require('sharp');
 const path = require('path');
 const userModel = require('../modules/userModel');
-const { nanoid } = require('nanoid');
+const { nanoid } = require('nanoid/non-secure');
 
 // Route handler function for updating user info this is a privet route
 // HTTP method (PATCH)
