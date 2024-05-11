@@ -22,6 +22,7 @@
       "jsonwebtoken": "^9.0.2",
       "mongoose": "^8.2.1",
       "nanoid": "^3.3.7",
+      "sharp": "^0.33.3",
       "uuid": "^9.0.1"
    }
 }

@@ -1,5 +1,8 @@
 const asyncHandler = require('express-async-handler');
+const sharp = require('sharp');
+const path = require('path');
 const userModel = require('../modules/userModel');
+const { nanoid } = require('nanoid');
 
 // Route handler function for updating user info this is a privet route
 // HTTP method (PATCH)
@@ -21,6 +24,12 @@ const upDateUser = asyncHandler(async (req, res) => {
          res.status(400);
          throw new Error('User not found');
       }
+
+      // Structure user info to be sent
+      const { name, username, profilePic } = updatedUser;
+
+      // Send success response with user info
+      res.status(200).json({ name, username, profilePic });
    } catch (error) {
       res.status(500);
       throw new Error('Server error unable to perform this action please try again later');
@@ -33,7 +42,36 @@ const upDateUser = asyncHandler(async (req, res) => {
 // Production uri ()
 const upDateUserProfilePic = asyncHandler(async (req, res) => {
    const UserID = req.user;
+   const profilePic = req.files.profilePic;
    try {
+      if (!profilePic) {
+         res.status(400);
+         throw new Error('Profile photo to be updated not found provide one');
+      }
+
+      // Generate a unique profile picture name
+      const profilePicName = `${nanoid(15)}.jpg`;
+
+      await sharp(profilePic.tempFilePath)
+         .resize({ width: 200, height: 200, fit: 'cover' })
+         .jpeg({ quality: 90 })
+         .toFile(path.join(__dirname, '../', 'medias', 'profilePhoto', profilePicName));
+
+      // Construct the profile picture URL
+      const profilePicUrl = `http://localhost:4040/api/v1/profilePic/${profilePicName}`;
+
+      const updatedUser = await userModel.findOneAndUpdate(UserID, { profilePic: profilePicUrl }, { new: true });
+
+      if (!updatedUser) {
+         res.status(400);
+         throw new Error('User not found');
+      }
+
+      // Structure user info to be sent
+      const { name, username, profilePic } = updatedUser;
+
+      // Send success response with user info
+      res.status(200).json({ name, username, profilePic });
    } catch (error) {
       res.status(500);
       throw new Error('Server error unable to perform this action please try again later');
