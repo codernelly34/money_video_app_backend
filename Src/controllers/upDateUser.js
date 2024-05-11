@@ -1,6 +1,7 @@
 const asyncHandler = require('express-async-handler');
 const sharp = require('sharp');
 const path = require('path');
+const fsPromise = require('fs/promises');
 const userModel = require('../modules/userModel');
 const { nanoid } = require('nanoid/non-secure');
 
@@ -49,6 +50,19 @@ const upDateUserProfilePic = asyncHandler(async (req, res) => {
          throw new Error('Profile photo to be updated not found provide one');
       }
 
+      const user = await userModel.findOne({ UserID });
+
+      if (!user) {
+         res.status(400);
+         throw new Error('User not found');
+      }
+
+      if (user.profilePic.includes('http://localhost:4040/api/v1/profilePic')) {
+         const oldUserProfilePic = user.profilePic.split('profilePic/').pop();
+
+         await fsPromise.unlink(path.join(__dirname, '../', 'medias', 'profilePhoto', oldUserProfilePic));
+      }
+
       // Generate a unique profile picture name
       const profilePicName = `${nanoid(15)}.jpg`;
 
@@ -60,12 +74,8 @@ const upDateUserProfilePic = asyncHandler(async (req, res) => {
       // Construct the profile picture URL
       const profilePicUrl = `http://localhost:4040/api/v1/profilePic/${profilePicName}`;
 
-      const updatedUser = await userModel.findOneAndUpdate(UserID, { profilePic: profilePicUrl }, { new: true });
-
-      if (!updatedUser) {
-         res.status(400);
-         throw new Error('User not found');
-      }
+      user.profilePic = profilePicUrl;
+      const updatedUser = await user.save();
 
       // Structure user info to be sent
       const { name, username, profilePic } = updatedUser;
