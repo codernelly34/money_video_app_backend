@@ -4,6 +4,7 @@ const { nanoid } = require('nanoid/non-secure');
 const userModel = require('../modules/userModel');
 const generateToken = require('../modules/generateToken');
 const setCookie = require('../modules/setCookie');
+const myLogger = require('../modules/logger');
 
 // Route handler function for initiating the OAuth flow
 // HTTP method (POST)
@@ -43,6 +44,7 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
          `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${GoogleOAuthClient.credentials.access_token}`
       );
       const userData = await response.json();
+      console.log(userData);
 
       // Extract user data
       const { sub, name, given_name, family_name, picture } = userData;
@@ -94,7 +96,7 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
       // Redirect to home page
       res.redirect(303, 'http://localhost:5173/');
    } catch (error) {
-      // Handle error
+      myLogger(error);
       res.status(500);
       throw new Error('Error logging in with OAuth2 user');
    }

@@ -12,29 +12,24 @@ const { nanoid } = require('nanoid/non-secure');
 const upDateUser = asyncHandler(async (req, res) => {
    const UserID = req.user;
    const updateFields = req.body;
-   try {
-      // Check if any field is present in the req.body
-      if (Object.keys(updateFields).length === 0) {
-         res.status(400);
-         throw new Error('No fields to update');
-      }
 
-      const updatedUser = await userModel.findOneAndUpdate(UserID, updateFields, { new: true });
-
-      if (!updatedUser) {
-         res.status(400);
-         throw new Error('User not found');
-      }
-
-      // Structure user info to be sent
-      const { name, username, profilePic } = updatedUser;
-
-      // Send success response with user info
-      res.status(200).json({ name, username, profilePic });
-   } catch (error) {
-      res.status(500);
-      throw new Error('Server error unable to perform this action please try again later');
+   // Check if any field is present in the req.body
+   if (Object.keys(updateFields).length === 0) {
+      res.status(400);
+      throw new Error('No fields to update');
    }
+   const updatedUser = await userModel.findOneAndUpdate(UserID, updateFields, { new: true });
+
+   if (!updatedUser) {
+      res.status(400);
+      throw new Error('User not found');
+   }
+
+   // Structure user info to be sent
+   const { name, username, profilePic } = updatedUser;
+
+   // Send success response with user info
+   res.status(200).json({ name, username, profilePic });
 });
 
 // Route handler function for updating user profile photo this is a privet route
@@ -57,8 +52,8 @@ const upDateUserProfilePic = asyncHandler(async (req, res) => {
          throw new Error('User not found');
       }
 
-      if (user.profilePic.includes('http://localhost:4040/api/v1/profilePic')) {
-         const oldUserProfilePic = user.profilePic.split('profilePic/').pop();
+      if (user.profilePic.includes('http://localhost:4040/api/v1/photo/get_profile_pic')) {
+         const oldUserProfilePic = user.profilePic.split('get_profile_pic/').pop();
 
          await fsPromise.unlink(path.join(__dirname, '../', 'medias', 'profilePhoto', oldUserProfilePic));
       }
@@ -72,7 +67,7 @@ const upDateUserProfilePic = asyncHandler(async (req, res) => {
          .toFile(path.join(__dirname, '../', 'medias', 'profilePhoto', profilePicName));
 
       // Construct the profile picture URL
-      const profilePicUrl = `http://localhost:4040/api/v1/profilePic/${profilePicName}`;
+      const profilePicUrl = `http://localhost:4040/api/v1/photo/get_profile_pic/${profilePicName}`;
 
       user.profilePic = profilePicUrl;
       const updatedUser = await user.save();

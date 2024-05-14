@@ -9,7 +9,7 @@ const statusMassage = {
 };
 
 // create and export errorHandler middleware function at once
-module.exports = errorHandler = (error, req, res, next) => {
+module.exports = errorHandler = (error, _req, res, _next) => {
    // Set the statusMassage based on the res.StatusCode
    const statusMsg = statusMassage[res.statusCode];
 

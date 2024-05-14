@@ -2,57 +2,53 @@ const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const userModel = require('../modules/userModel');
 const generateToken = require('../modules/generateToken');
-const setCookie = require('../modules/setCookie');
+const { setCookie, clearCookie } = require('../modules/setCookie');
+const myLogger = require('../modules/logger');
 
-// Route handler function for refreshing user access token
-// HTTP method (GET)
-// Development uri (http://localhost:4040/api/v1/account/refresh_access)
-// Production uri ()
+const errorMsg =
+   'Invalid refresh token. This is an attempt to hack this account. You will be logged out. Please re-login to protect your account.';
+
 const refreshAccessToken = asyncHandler(async (req, res) => {
-   // Check if refreshToken is present in signed cookies
-   if (!req.signedCookies.refreshToken) {
+   if (!req.signedCookies?.refreshToken) {
       res.status(401);
       throw new Error('Refresh token is missing');
    }
 
-   try {
-      // Set the refresh token
-      const refreshToken = req.signedCookies.refreshToken;
+   const oldRefreshToken = req.signedCookies.refreshToken;
+   clearCookie.refresh(res);
 
-      const errorMsg =
-         'Invalid refresh token this is an attempt to hack this account you will be logout completely re-login to protect your account';
+   const user = await userModel.findOne({ tokens: oldRefreshToken }).exec();
+   console.log(user);
 
-      // Check if refresh token is associated with a user in the database
-      const user = await userModel.findOne({ tokens: refreshToken });
-      if (!user) {
-         res.clearCookie();
-         res.status(403);
-         throw new Error(errorMsg);
+   if (!user) {
+      jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
+         if (err) {
+            res.sendStatus(401);
+         }
+         const hackedUser = await userModel.findOneAndUpdate({ UserID: decoded.UserID }, { tokens: [] }).exec();
+      });
+      res.status(403);
+      throw new Error(errorMsg);
+   }
+
+   const newTokenArray = user.tokens.filter((token) => token !== oldRefreshToken);
+   console.log(newTokenArray);
+
+   jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
+      if (err) {
+         user.tokens = newTokenArray;
+         await user.save();
+         res.sendStatus(401);
       }
 
-      // Verify the refresh token
-      jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
-         if (err) {
-            res.clearCookie('refreshToken');
-            res.status(403);
-            throw new Error(errorMsg);
-         }
+      const { refreshToken, accessToken } = generateToken(decoded.UserID);
 
-         res.clearCookie();
+      user.tokens = [...newTokenArray, refreshToken];
+      await user.save();
 
-         // Generate a new tokens
-         const { refreshToken, accessToken } = generateToken(user.UserID);
-
-         // Set cookie with new tokens
-         setCookie(res, refreshToken, accessToken);
-
-         // Send success response
-         res.sendStatus(200);
-      });
-   } catch (error) {
-      res.status(500);
-      throw new Error('Internal Server Error');
-   }
+      setCookie(res, refreshToken, accessToken);
+      res.sendStatus(200);
+   });
 });
 
 module.exports = refreshAccessToken;

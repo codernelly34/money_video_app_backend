@@ -1,5 +1,6 @@
 const asyncHandler = require('express-async-handler');
 const userModel = require('../modules/userModel');
+const myLogger = require('../modules/logger');
 
 // Route handler function for sending user info this is a privet route
 // HTTP method (GET)
@@ -19,6 +20,7 @@ const getUserInfo = asyncHandler(async (req, res) => {
       // Send back success response with user info if above validation successful
       res.status(200).json({ name, username, profilePic });
    } catch (error) {
+      myLogger(error);
       res.status(500);
       throw new Error('Server error unable to perform this action please try again later');
    }

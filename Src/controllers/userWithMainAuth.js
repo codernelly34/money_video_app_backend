@@ -3,9 +3,10 @@ const bcrypt = require('bcrypt');
 const userModel = require('../modules/userModel');
 const { nanoid } = require('nanoid/non-secure');
 const generateToken = require('../modules/generateToken');
-const setCookie = require('../modules/setCookie');
+const { setCookie } = require('../modules/setCookie');
 const fsPromise = require('fs/promises');
 const path = require('path');
+const myLogger = require('../modules/logger');
 
 // Route handler function for creating a user account
 // HTTP method (POST)
@@ -41,7 +42,7 @@ const createUserAccount = asyncHandler(async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 11);
 
       // Generate a unique userID
-      const userID = nanoid(6);
+      const UserID = nanoid(6);
 
       // Create User profile photo with SVG using the first letter of the user's name
       const createProfilePic = `
@@ -63,14 +64,15 @@ const createUserAccount = asyncHandler(async (req, res) => {
       await fsPromise.writeFile(profilePicFilePath, createProfilePic);
 
       // Construct the profile picture URL
-      const profilePicUrl = `http://localhost:4040/api/v1/profilePic/${profilePicName}`;
+      const profilePicUrl = `http://localhost:4040/api/v1/photo/get_profile_pic/${profilePicName}`;
 
       // Create user account if the above validations are successful
-      await userModel.create({ name, email, username, userID, profilePic: profilePicUrl, password: hashedPassword });
+      await userModel.create({ name, email, username, UserID, profilePic: profilePicUrl, password: hashedPassword });
 
       // Send success response if user has been created
       res.sendStatus(201);
    } catch (error) {
+      myLogger(error);
       res.status(500);
       throw new Error('Server error unable to perform this action please try again later');
    }
@@ -81,30 +83,30 @@ const createUserAccount = asyncHandler(async (req, res) => {
 // Development uri (http://localhost:4040/api/v1/account/main/login)
 // Production uri ()
 const userLogin = asyncHandler(async (req, res) => {
+   // Extract user info from req.validBody which is set in validateReqBody after validation is complete
+   const { email, password } = req.validBody;
+
+   // Check if user with the given email exists
+   const user = await userModel.findOne({ email });
+   if (!user) {
+      res.status(401);
+      throw new Error('Invalid Email');
+   }
+
+   // Compare password
+   const isPasswordValid = await bcrypt.compare(password, user.password);
+   if (!isPasswordValid) {
+      res.status(400);
+      throw new Error('Invalid Password');
+   }
+
+   // Generate tokens
+   const { refreshToken, accessToken } = generateToken(user.UserID);
+
+   // Set cookies
+   setCookie(res, refreshToken, accessToken);
+
    try {
-      // Extract user info from req.validBody which is set in validateReqBody after validation is complete
-      const { email, password } = req.validBody;
-
-      // Check if user with the given email exists
-      const user = await userModel.findOne({ email });
-      if (!user) {
-         res.status(401);
-         throw new Error('Invalid Email');
-      }
-
-      // Compare password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-         res.status(400);
-         throw new Error('Invalid Password');
-      }
-
-      // Generate tokens
-      const { refreshToken, accessToken } = generateToken(user.userID);
-
-      // Set cookies
-      setCookie(res, refreshToken, accessToken);
-
       // Update user tokens
       user.tokens.push(refreshToken);
       await user.save();
@@ -119,6 +121,7 @@ const userLogin = asyncHandler(async (req, res) => {
       // Send success response with user info
       res.status(200).json(userInfo);
    } catch (error) {
+      myLogger(error);
       res.status(500);
       throw new Error('Server error unable to perform this action please try again later');
    }

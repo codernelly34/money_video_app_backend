@@ -3,14 +3,15 @@ const UserRoute = require('./userRoutes/UserRouter');
 const uploadVideo = require('./MoviesRoutes/uploadVideoRouter');
 const videoInfoRoute = require('./MoviesRoutes/videoInfoRouter');
 const streamVideoRouter = require('./MoviesRoutes/streamVideoRouter');
-const streamThumbnailRouter = require('./MoviesRoutes/streamThumbnailRouter');
+const streamPhotoRouter = require('./MoviesRoutes/streamPhoto');
 
 // Route for handling all logic about User account
 router.use('/account', UserRoute);
 
 router.use('/video', uploadVideo);
 
-router.use('/thumbnail', streamThumbnailRouter);
+// Route for streaming thumbnails and user profile pic
+router.use('/photo', streamPhotoRouter);
 
 router.use('/videoStream', streamVideoRouter);
 
