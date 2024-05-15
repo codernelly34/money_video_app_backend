@@ -1,6 +1,5 @@
 const asyncHandler = require('express-async-handler');
 const userModel = require('../modules/userModel');
-const myLogger = require('../modules/logger');
 const { ServerError } = require('../middlewares/errorHandler');
 
 // Route handler function for sending user info this is a privet route

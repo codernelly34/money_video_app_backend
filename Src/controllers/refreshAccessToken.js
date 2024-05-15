@@ -1,8 +1,8 @@
 const asyncHandler = require('express-async-handler');
 const jwt = require('jsonwebtoken');
 const userModel = require('../modules/userModel');
-const generateToken = require('../modules/generateToken');
-const { setCookie, clearCookie } = require('../modules/setCookie');
+const generateToken = require('../utils/generateToken');
+const { setCookie, clearCookie } = require('../utils/setCookie');
 const { ServerError } = require('../middlewares/errorHandler');
 
 const errorMsg =

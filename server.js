@@ -30,15 +30,15 @@ app.all('*', (_req, res) => {
 app.use(errorHandler);
 
 // MongoDB connection
-mongoose
-   .connect(process.env.MONGO_URI)
-   .then(() => {
-      console.log('MongoDB connected successfully!');
-      // Start the server after MongoDB connection is established
-      app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));
-   })
-   .catch((error) => {
-      mongoose.connection.close();
-      console.error(error);
-      process.exit(1);
-   });
+// mongoose
+//    .connect(process.env.MONGO_URI)
+//    .then(() => {
+//       console.log('MongoDB connected successfully!');
+//       // Start the server after MongoDB connection is established
+//    })
+//    .catch((error) => {
+//       mongoose.connection.close();
+//       console.error(error);
+//       process.exit(1);
+//    });
+app.listen(PORT, () => console.log(`Server is running on port ${PORT}`));

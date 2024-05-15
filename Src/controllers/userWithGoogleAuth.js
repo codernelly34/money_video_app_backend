@@ -1,10 +1,9 @@
 const asyncHandler = require('express-async-handler');
-const GoogleOAuthClient = require('../modules/setGoogleOAuthClient');
+const GoogleOAuthClient = require('../utils/setGoogleOAuthClient');
 const { nanoid } = require('nanoid/non-secure');
 const userModel = require('../modules/userModel');
-const generateToken = require('../modules/generateToken');
-const setCookie = require('../modules/setCookie');
-const myLogger = require('../modules/logger');
+const generateToken = require('../utils/generateToken');
+const setCookie = require('../utils/setCookie');
 
 // Route handler function for initiating the OAuth flow
 // HTTP method (POST)
