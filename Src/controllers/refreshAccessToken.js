@@ -3,19 +3,20 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../modules/userModel');
 const generateToken = require('../modules/generateToken');
 const { setCookie, clearCookie } = require('../modules/setCookie');
-const myLogger = require('../modules/logger');
+const { ServerError } = require('../middlewares/errorHandler');
 
 const errorMsg =
    'Invalid refresh token. This is an attempt to hack this account. You will be logged out. Please re-login to protect your account.';
 
 const refreshAccessToken = asyncHandler(async (req, res) => {
    if (!req.signedCookies?.refreshToken) {
-      res.status(401);
-      throw new Error('Refresh token is missing');
+      throw new ServerError({ errMassage: 'Refresh token is missing', errStatusCode: 401, isOperational: false });
+      return;
    }
 
    const oldRefreshToken = req.signedCookies.refreshToken;
    clearCookie.refresh(res);
+   clearCookie.access(res);
 
    const user = await userModel.findOne({ tokens: oldRefreshToken }).exec();
    console.log(user);
@@ -27,27 +28,37 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
          }
          const hackedUser = await userModel.findOneAndUpdate({ UserID: decoded.UserID }, { tokens: [] }).exec();
       });
-      res.status(403);
-      throw new Error(errorMsg);
+      throw new ServerError({ errMassage: errorMsg, errStatusCode: 403, isOperational: false });
+      return;
    }
 
    const newTokenArray = user.tokens.filter((token) => token !== oldRefreshToken);
    console.log(newTokenArray);
 
    jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
-      if (err) {
-         user.tokens = newTokenArray;
+      try {
+         if (err) {
+            user.tokens = newTokenArray;
+            await user.save();
+            res.sendStatus(401);
+            return;
+         }
+
+         const { refreshToken, accessToken } = generateToken(decoded.UserID);
+
+         user.tokens = [...newTokenArray, refreshToken];
          await user.save();
-         res.sendStatus(401);
+
+         setCookie(res, refreshToken, accessToken);
+         res.sendStatus(200);
+      } catch (error) {
+         throw new ServerError({
+            errMassage: 'Server error unable to perform this action please try again later',
+            errStatusCode: 500,
+            isOperational: true,
+            error: error,
+         });
       }
-
-      const { refreshToken, accessToken } = generateToken(decoded.UserID);
-
-      user.tokens = [...newTokenArray, refreshToken];
-      await user.save();
-
-      setCookie(res, refreshToken, accessToken);
-      res.sendStatus(200);
    });
 });
 

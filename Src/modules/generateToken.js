@@ -9,7 +9,7 @@ const generateToken = (UserID) => {
 
    const accessToken = jwt.sign({ UserID }, process.env.ACCESS_TOKEN_SECRET, {
       algorithm: 'HS256',
-      expiresIn: '5h',
+      expiresIn: '2m',
    });
 
    return { refreshToken, accessToken };

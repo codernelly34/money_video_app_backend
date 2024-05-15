@@ -6,38 +6,35 @@ const generateToken = require('../modules/generateToken');
 const { setCookie } = require('../modules/setCookie');
 const fsPromise = require('fs/promises');
 const path = require('path');
-const myLogger = require('../modules/logger');
+const { ServerError } = require('../middlewares/errorHandler');
 
 // Route handler function for creating a user account
 // HTTP method (POST)
 // Development uri (http://localhost:4040/api/v1/account/main/register)
 // Production uri ()
 const createUserAccount = asyncHandler(async (req, res) => {
+   // Extract user info from req.validBody which is set in validateReqBody after validation is complete
+   const { name, email, username, password } = req.validBody;
+
+   // Check if name is already in use
+   const nameExists = await userModel.findOne({ name });
+   if (nameExists) {
+      throw new ServerError({ errMassage: 'Name already in use', errStatusCode: 400, isOperational: false });
+   }
+
+   // Check if email is already in use
+   const emailExists = await userModel.findOne({ email });
+   if (emailExists) {
+      throw new ServerError({ errMassage: 'Email already in use', errStatusCode: 400, isOperational: false });
+   }
+
+   // Check if username is already in use
+   const usernameExists = await userModel.findOne({ username });
+   if (usernameExists) {
+      throw new ServerError({ errMassage: 'Username already in use', errStatusCode: 400, isOperational: false });
+   }
+
    try {
-      // Extract user info from req.validBody which is set in validateReqBody after validation is complete
-      const { name, email, username, password } = req.validBody;
-
-      // Check if name is already in use
-      const nameExists = await userModel.findOne({ name });
-      if (nameExists) {
-         res.status(400);
-         throw new Error('Name already in use');
-      }
-
-      // Check if email is already in use
-      const emailExists = await userModel.findOne({ email });
-      if (emailExists) {
-         res.status(400);
-         throw new Error('Email already in use');
-      }
-
-      // Check if username is already in use
-      const usernameExists = await userModel.findOne({ username });
-      if (usernameExists) {
-         res.status(400);
-         throw new Error('Username already in use');
-      }
-
       // Hash the password
       const hashedPassword = await bcrypt.hash(password, 11);
 
@@ -64,7 +61,7 @@ const createUserAccount = asyncHandler(async (req, res) => {
       await fsPromise.writeFile(profilePicFilePath, createProfilePic);
 
       // Construct the profile picture URL
-      const profilePicUrl = `http://localhost:4040/api/v1/photo/get_profile_pic/${profilePicName}`;
+      const profilePicUrl = `${process.env.DOMAIN_2}/api/v1/photo/get_profile_pic/${profilePicName}`;
 
       // Create user account if the above validations are successful
       await userModel.create({ name, email, username, UserID, profilePic: profilePicUrl, password: hashedPassword });
@@ -72,9 +69,12 @@ const createUserAccount = asyncHandler(async (req, res) => {
       // Send success response if user has been created
       res.sendStatus(201);
    } catch (error) {
-      myLogger(error);
-      res.status(500);
-      throw new Error('Server error unable to perform this action please try again later');
+      throw new ServerError({
+         errMassage: 'Server error unable to perform this action please try again later',
+         errStatusCode: 500,
+         isOperational: true,
+         error: error,
+      });
    }
 });
 
@@ -89,24 +89,22 @@ const userLogin = asyncHandler(async (req, res) => {
    // Check if user with the given email exists
    const user = await userModel.findOne({ email });
    if (!user) {
-      res.status(401);
-      throw new Error('Invalid Email');
+      throw new ServerError({ errMassage: 'Invalid Email', errStatusCode: 400, isOperational: false });
    }
 
    // Compare password
    const isPasswordValid = await bcrypt.compare(password, user.password);
    if (!isPasswordValid) {
-      res.status(400);
-      throw new Error('Invalid Password');
+      throw new ServerError({ errMassage: 'Invalid Password', errStatusCode: 400, isOperational: false });
    }
 
-   // Generate tokens
-   const { refreshToken, accessToken } = generateToken(user.UserID);
-
-   // Set cookies
-   setCookie(res, refreshToken, accessToken);
-
    try {
+      // Generate tokens
+      const { refreshToken, accessToken } = generateToken(user.UserID);
+
+      // Set cookies
+      setCookie(res, refreshToken, accessToken);
+
       // Update user tokens
       user.tokens.push(refreshToken);
       await user.save();
@@ -121,9 +119,12 @@ const userLogin = asyncHandler(async (req, res) => {
       // Send success response with user info
       res.status(200).json(userInfo);
    } catch (error) {
-      myLogger(error);
-      res.status(500);
-      throw new Error('Server error unable to perform this action please try again later');
+      throw new ServerError({
+         errMassage: 'Server error unable to perform this action please try again later',
+         errStatusCode: 500,
+         isOperational: true,
+         error: error,
+      });
    }
 });
 

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const cors = require('cors');
 const cookieParser = require('cookie-parser');
 const routes = require('./Src/routers/router');
-const errorHandler = require('./Src/middlewares/errorHandler');
+const { errorHandler } = require('./Src/middlewares/errorHandler');
 require('dotenv/config');
 
 const app = express();

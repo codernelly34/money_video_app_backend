@@ -8,14 +8,33 @@ const statusMassage = {
    500: 'Internal Server Error',
 };
 
-// create and export errorHandler middleware function at once
-module.exports = errorHandler = (error, _req, res, _next) => {
-   // Set the statusMassage based on the res.StatusCode
-   const statusMsg = statusMassage[res.statusCode];
+// create errorHandler middleware function at once
+const errorHandler = (err, _req, res, _next) => {
+   // Set the statusMassage based on the err.errStatusCode
+   const statusMsg = statusMassage[err.errStatusCode];
 
    // Include stack tress in development mode and remove it in production mode
-   const stack = process.env.NODE_ENV !== 'production' ? error.stack : null;
+   const stack = process.env.NODE_ENV !== 'production' ? err.stack : null;
+
+   if (err.error) console.log(err.error);
 
    // Finally send the Error
-   res.json({ statusMsg, message: error.message, stack });
+   res.status(err.errStatusCode).json({ statusMsg, message: err.message, stack });
 };
+
+class ServerError extends Error {
+   constructor({ errStatusCode, errMassage, isOperational, error }) {
+      super(errMassage);
+
+      Object.setPrototypeOf(this, new.target.prototype);
+
+      this.errStatusCode = errStatusCode;
+      this.errMassage = errMassage;
+      this.isOperational = isOperational;
+      this.error = error;
+
+      Error.captureStackTrace(this);
+   }
+}
+
+module.exports = { ServerError, errorHandler };

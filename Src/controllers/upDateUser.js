@@ -4,6 +4,7 @@ const path = require('path');
 const fsPromise = require('fs/promises');
 const userModel = require('../modules/userModel');
 const { nanoid } = require('nanoid/non-secure');
+const { ServerError } = require('../middlewares/errorHandler');
 
 // Route handler function for updating user info this is a privet route
 // HTTP method (PATCH)
@@ -15,21 +16,26 @@ const upDateUser = asyncHandler(async (req, res) => {
 
    // Check if any field is present in the req.body
    if (Object.keys(updateFields).length === 0) {
-      res.status(400);
-      throw new Error('No fields to update');
-   }
-   const updatedUser = await userModel.findOneAndUpdate(UserID, updateFields, { new: true });
-
-   if (!updatedUser) {
-      res.status(400);
-      throw new Error('User not found');
+      throw new ServerError({ errMassage: 'No fields to update', errStatusCode: 400, isOperational: false });
    }
 
-   // Structure user info to be sent
-   const { name, username, profilePic } = updatedUser;
+   try {
+      // Check for user in DB an update no need for checking if USerID is present because verify access middleware does that
+      const updatedUser = await userModel.findOneAndUpdate(UserID, updateFields, { new: true });
 
-   // Send success response with user info
-   res.status(200).json({ name, username, profilePic });
+      // Structure user info to be sent
+      const { name, username, profilePic } = updatedUser;
+
+      // Send success response with user info
+      res.status(200).json({ name, username, profilePic });
+   } catch (error) {
+      throw new ServerError({
+         errMassage: 'Server error unable to perform this action please try again later',
+         errStatusCode: 500,
+         isOperational: true,
+         error: error,
+      });
+   }
 });
 
 // Route handler function for updating user profile photo this is a privet route
@@ -39,20 +45,20 @@ const upDateUser = asyncHandler(async (req, res) => {
 const upDateUserProfilePic = asyncHandler(async (req, res) => {
    const UserID = req.user;
    const profilePic = req.files.profilePic;
-   try {
-      if (!profilePic) {
-         res.status(400);
-         throw new Error('Profile photo to be updated not found provide one');
-      }
 
+   if (!profilePic) {
+      throw new ServerError({
+         errMassage: 'Profile photo to be updated not found provide one',
+         errStatusCode: 400,
+         isOperational: false,
+      });
+   }
+
+   try {
+      // Check for user in DB no need for checking if USerID is present because verify access middleware does that
       const user = await userModel.findOne({ UserID });
 
-      if (!user) {
-         res.status(400);
-         throw new Error('User not found');
-      }
-
-      if (user.profilePic.includes('http://localhost:4040/api/v1/photo/get_profile_pic')) {
+      if (user.profilePic.includes(`${process.env.DOMAIN_2}/api/v1/photo/get_profile_pic`)) {
          const oldUserProfilePic = user.profilePic.split('get_profile_pic/').pop();
 
          await fsPromise.unlink(path.join(__dirname, '../', 'medias', 'profilePhoto', oldUserProfilePic));
@@ -67,7 +73,7 @@ const upDateUserProfilePic = asyncHandler(async (req, res) => {
          .toFile(path.join(__dirname, '../', 'medias', 'profilePhoto', profilePicName));
 
       // Construct the profile picture URL
-      const profilePicUrl = `http://localhost:4040/api/v1/photo/get_profile_pic/${profilePicName}`;
+      const profilePicUrl = `${process.env.DOMAIN_2}/api/v1/photo/get_profile_pic/${profilePicName}`;
 
       user.profilePic = profilePicUrl;
       const updatedUser = await user.save();
@@ -78,8 +84,12 @@ const upDateUserProfilePic = asyncHandler(async (req, res) => {
       // Send success response with user info
       res.status(200).json({ name, username, profilePic });
    } catch (error) {
-      res.status(500);
-      throw new Error('Server error unable to perform this action please try again later');
+      throw new ServerError({
+         errMassage: 'Server error unable to perform this action please try again later',
+         errStatusCode: 500,
+         isOperational: true,
+         error: error,
+      });
    }
 });
 
