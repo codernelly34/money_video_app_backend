@@ -42,7 +42,6 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
       `https://www.googleapis.com/oauth2/v3/userinfo?access_token=${GoogleOAuthClient.credentials.access_token}`
    );
    const userData = await response.json();
-   console.log(userData);
 
    // Extract user data
    const { sub, name, given_name, family_name, picture } = userData;
@@ -50,6 +49,7 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
    // Check if user exists in the database
    const existingUser = await userModel.findOne({ sub });
 
+   // If the user that grants consent is in the DB login the user instead of creating new user
    if (existingUser) {
       // Generate tokens
       const accessToken = generateToken.accessToken(existingUser.UserID);
@@ -63,9 +63,10 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
       await existingUser.save();
 
       // Redirect to home page
-      res.redirect(303, 'http://localhost:5173/');
-      return;
+      return res.redirect(303, 'http://localhost:5173/');
    }
+
+   // Else if the user that grants consent is not in DB create new user
 
    // Generate a UserID
    const userID = nanoid(6);
@@ -94,7 +95,7 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
    await savedUser.save();
 
    // Redirect to home page
-   res.redirect(303, 'http://localhost:5173/');
+   return res.redirect(303, 'http://localhost:5173/');
 });
 
 module.exports = { startOAuthFlow, handleOAuthRedirect };
