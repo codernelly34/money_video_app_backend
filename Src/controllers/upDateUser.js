@@ -4,7 +4,7 @@ const path = require('path');
 const fsPromise = require('fs/promises');
 const userModel = require('../modules/userModel');
 const { nanoid } = require('nanoid/non-secure');
-const { ServerError } = require('../middlewares/errorHandler');
+const ServerError = require('../utils/customErrorClass');
 
 // Route handler function for updating user info this is a privet route
 // HTTP method (PATCH)

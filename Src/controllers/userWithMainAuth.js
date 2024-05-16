@@ -6,7 +6,7 @@ const generateToken = require('../utils/generateToken');
 const { setCookie } = require('../utils/setCookie');
 const fsPromise = require('fs/promises');
 const path = require('path');
-const { ServerError } = require('../middlewares/errorHandler');
+const ServerError = require('../utils/customErrorClass');
 
 // Route handler function for creating a user account
 // HTTP method (POST)
@@ -100,7 +100,8 @@ const userLogin = asyncHandler(async (req, res) => {
 
    try {
       // Generate tokens
-      const { refreshToken, accessToken } = generateToken(user.UserID);
+      const accessToken = generateToken.accessToken(user.UserID);
+      const refreshToken = generateToken.refreshToken(user.UserID);
 
       // Set cookies
       setCookie(res, refreshToken, accessToken);

@@ -22,19 +22,4 @@ const errorHandler = (err, _req, res, _next) => {
    res.status(err.errStatusCode).json({ statusMsg, message: err.message, stack });
 };
 
-class ServerError extends Error {
-   constructor({ errStatusCode, errMassage, isOperational, error }) {
-      super(errMassage);
-
-      Object.setPrototypeOf(this, new.target.prototype);
-
-      this.errStatusCode = errStatusCode;
-      this.errMassage = errMassage;
-      this.isOperational = isOperational;
-      this.error = error;
-
-      Error.captureStackTrace(this);
-   }
-}
-
-module.exports = { ServerError, errorHandler };
+module.exports = errorHandler;

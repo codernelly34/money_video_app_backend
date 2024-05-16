@@ -1,5 +1,5 @@
 const jwt = require('jsonwebtoken');
-const { ServerError } = require('./errorHandler');
+const ServerError = require('../utils/customErrorClass');
 require('dotenv/config');
 
 // Middleware function to verify if User have to protected route

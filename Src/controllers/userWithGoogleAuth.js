@@ -52,7 +52,8 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
 
    if (existingUser) {
       // Generate tokens
-      const { refreshToken, accessToken } = generateToken(existingUser.UserID);
+      const accessToken = generateToken.accessToken(existingUser.UserID);
+      const refreshToken = generateToken.refreshToken(existingUser.UserID);
 
       // Set cookies
       setCookie(res, refreshToken, accessToken);
@@ -82,7 +83,8 @@ const handleOAuthRedirect = asyncHandler(async (req, res) => {
    const savedUser = await userModel.create(newUser);
 
    // Generate tokens
-   const { refreshToken, accessToken } = generateToken(userID);
+   const accessToken = generateToken.accessToken(userID);
+   const refreshToken = generateToken.refreshToken(userID);
 
    // Set cookies
    setCookie(res, refreshToken, accessToken);

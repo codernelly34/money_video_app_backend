@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken');
 const userModel = require('../modules/userModel');
 const generateToken = require('../utils/generateToken');
 const { setCookie, clearCookie } = require('../utils/setCookie');
-const { ServerError } = require('../middlewares/errorHandler');
+const ServerError = require('../utils/customErrorClass');
 
 const errorMsg =
    'Invalid refresh token. This is an attempt to hack this account. You will be logged out. Please re-login to protect your account.';
@@ -16,7 +16,6 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
 
    const oldRefreshToken = req.signedCookies.refreshToken;
    clearCookie.refresh(res);
-   clearCookie.access(res);
 
    const user = await userModel.findOne({ tokens: oldRefreshToken }).exec();
    console.log(user);
@@ -38,14 +37,19 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
    jwt.verify(oldRefreshToken, process.env.REFRESH_TOKEN_SECRET, async (err, decoded) => {
       try {
          if (err) {
+            /* Set user tokens to equal the new token array which does not include the old refresh token 
+            if jwt.verify return an error which will mean the old token has expired an it's not valid */
             user.tokens = newTokenArray;
             await user.save();
             res.sendStatus(401);
             return;
          }
 
-         const { refreshToken, accessToken } = generateToken(decoded.UserID);
+         // Generate tokens
+         const accessToken = generateToken.accessToken(decoded.UserID);
+         const refreshToken = generateToken.refreshToken(decoded.UserID);
 
+         // Set user tokens to equal the new token array including the newly created token if jwt.verify verify the old token
          user.tokens = [...newTokenArray, refreshToken];
          await user.save();
 

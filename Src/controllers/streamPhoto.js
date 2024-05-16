@@ -6,7 +6,7 @@ const fs = require('fs');
 // HTTP method (GET)
 // Development uri (http://localhost:4040/api/v1/photo/get_thumbnail/:thumbnailName)
 // Production uri ()
-const streamThumbnail = async (req, res) => {
+const streamThumbnail = (req, res) => {
    // Get the thumbnail name from the req query
    const thumbnailName = req.params.thumbnailName;
 
@@ -33,7 +33,7 @@ const streamThumbnail = async (req, res) => {
 // HTTP method (GET)
 // Development uri (http://localhost:4040/api/v1/photo/get_profile_pic/:profilePicName)
 // Production uri ()
-const streamProfilePic = async (req, res) => {
+const streamProfilePic = (req, res) => {
    // Get the profilePic name from the req query
    const profilePicName = req.params.profilePicName;
 
